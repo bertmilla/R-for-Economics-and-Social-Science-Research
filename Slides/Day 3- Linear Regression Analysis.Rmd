@@ -1,0 +1,644 @@
+---
+title: "Linear Regression Analysis Using R"
+author: "NE Milla, Jr."
+date: "`r Sys.Date()`"
+output:
+  html_document: null
+  pdf_document: default
+---
+
+```{=html}
+<style type="text/css">
+
+body, td {
+   font-size: 22px;
+}
+code.r{
+  font-size: 22px;
+}
+pre {
+  font-size: 22px
+}
+</style>
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# **Introduction**
+
+**Regression analysis**
+
+- It is a technique of studying the dependence of one variable (called dependent variable), on one or more independent variables (called explanatory variables)
+
+- The goals of regression analysis are:
+
+   - *Estimating* the relationship between the dependent variable and the explanatory variable(s)
+   
+   - *Evaluating* the effect of each of the explanatory variables on the dependent variable, controlling the effects of all other explanatory variables
+   
+   - *Predicting* the value of the dependent variable for a given value of the explanatory variables
+   
+<br>
+
+### **The linear regression model**
+
+- In regression analysis we wish to express the relationship between the dependent variable and the explanatory variable in a functional form
+$$
+Y = f(X) + \epsilon
+$$
+
+- Suppose we observe pairs (X,Y) and the scatterplot shows a fairly linear pattern, then we can let
+$$
+f(X) = \beta_0 + \beta_1 X
+$$
+
+- Thus, the (simple) linear regression model is given by
+$$
+Y = \beta_0 + \beta_1X + \epsilon
+$$
+where:
+   - Y is the response variable
+   - X is the regressor (predictor)
+   - $\beta_0$ - y-intercept
+   - $\beta_1$ - slope of the regression line; regression coefficient
+   - $\epsilon$ is the random error term
+
+- For example, X may represent TV advertising and Y may represent sales.
+
+<br>
+
+### **Interpretation of the regression parameters of the SLR model**
+
+- $\beta_0$ is the y-intercept of the regression line. It is the estimated mean response when X=0
+
+- $\beta_0$ is meaningful only if 
+   - X=0 is within the range of X values in the data, and 
+   - X=0 is a logical or meaningful value
+
+- $\beta_1$ is the slope of the regression line. It is the estimated change in the mean response for every unit change in X
+
+<br>
+
+### **Estimation of regression parameters**
+
+- The regression parameters  $\beta_0$ and $\beta_1$ are unknown quantities that must be estimated from the data
+
+- The most common and popular method of estimating regression parameters is the _Method of Least Squares_
+
+- The resulting estimators are called Ordinary Least Squares (OLS) estimators
+
+- The OLS estimators of  $\beta_0$ and $\beta_1$ are $\hat{\beta_0}$ and $\hat{\beta_1}$, respectively
+
+- $\hat{\beta_0} = b_0$ and $\hat{\beta_1} = b_1$
+
+<br>
+
+### **Assumptions of the linear regression model**
+
+**Standard assumptions**
+
+- Y is a continuous random variable
+
+- $\epsilon_i \sim N(0, \sigma^2), \forall \; i \Longrightarrow$ _normality_ and _homogenous variance_ assumptions 
+
+- For two different observations, $i$ and $j$, the error terms $\epsilon_i$ and $\epsilon_j$ are independent $\Longrightarrow$ independence assumption
+
+**Assumptions on the predictor variables**
+
+- The predictor variables are assumed fixed or selected in advance.
+
+- The values of the predictors are assumed to be measured without error.
+
+- The predictor variables are assumed to be linearly independent of each other (_No multicollinearity_) $\Longrightarrow$ **multicollinearity** occurs if at least 2 of the regressors are strongly and significantly correlated
+   
+**Assumption about the observations**
+
+- All observations are equally important in determining the results and in influencing conclusions (absence of outliers and influential observations)
+
+<br>
+
+### **Overall measures of fit of the model**
+
+- Coefficient of determination (**$R^2$**): 
+
+   - the percentage of variation in Y that can be explained or attributed to its linear relation with X
+   
+   - the closer to 1 or 100% the better the fit
+
+- **F** test of overall effect of X: $F = \frac{MSR}{MSE}$
+
+   - A significant F value indicates that Y is significantly related with X; X has a significant effect on Y 
+
+- Root Mean Square Error (**RMSE**): 
+
+   - standard deviation of the residuals (=difference between the observed Y and the predicted Y from the model)
+   
+   - the closer to zero the better the fit
+   
+<br>
+
+### **Inference on the parameter of a SLR model**
+
+
+- $H_0: \beta_1 = 0$ (X has no effect on Y)
+
+- $H_1: \beta_1 \neq 0$ (X has an effect on Y)
+
+- Test statistic: $t=\frac{\hat{\beta_1}}{se(\hat{\beta_1})}$
+
+<br>
+
+# **An example of SLR analysis**
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Loading required packages
+library(ISLR)
+library(readxl)
+library(tidyverse)
+library(ggpubr)
+library(performance)
+library(car)
+library(caret)
+library(olsrr)
+library(jtools)
+library(moments)
+library(lmtest)
+library(see)
+library(caTools)
+library(gtsummary)
+library(modelsummary)
+library(DescTools)
+library(ggeffects)
+library(rsample)
+library(regclass)
+library(sjPlot)
+
+#Importing the data into R
+sales.data <- read_excel("Data/Advertising.xlsx")
+head(sales.data) #Displays the 1st 6 rows of the data frame
+
+#Visualization
+ggscatter(x = "TV",
+          y = "sales",
+          data = sales.data,
+          color = "darkgreen", 
+          shape = 19, size = 1.75, 
+          add = "reg.line",
+          conf.int = TRUE,
+          add.params = list(color = "blue", fill = "lightgray")) +
+  labs(x = "Spending on TV ads",
+       y = "Sales")
+
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Code for SLR model
+slr <- lm(sales ~ TV,
+           data = sales.data)
+
+#Displays the output of the analysis
+summary(slr)
+```
+
+<br> 
+
+# **Checking the assumptions**
+
+Before the results of regression analysis are interpreted, we need to make sure that the assumptions of the model are satisfied. Conclusions drawn from a regression analysis is valid and
+reliable only if the assumptions are satisfied. Regression diagnostics refers to detection of violations of model assumptions and is also referred to as residual analysis since many of the model assumptions will be checked using the residuals. The residuals are the difference between the observed values of Y and the values predicted from the model. The residuals are denoted by $\hat{\epsilon}$ and are computed as
+$$
+\hat{\epsilon} = Y - \hat{Y}
+$$
+
+<br> 
+
+### **Checking the linearity assumption**
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+library(GGally)
+library(lmtest)
+
+#Pairwise scatter plots of DV with IV
+sales.data |> 
+  select(TV, sales) |> 
+  ggpairs()
+
+#Rainbow test for linearity
+raintest(slr)
+```
+
+
+**INTERPRETATION**: The non-significant result of the rainbow test indicates that a linear model fits the data well.
+
+<br> 
+
+### **Checking normality of residuals assumption**
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Shapiro-Wilk test for normality
+shapiro.test(slr$residuals)
+```
+
+
+**INTERPRETATION**: Residuals are normally distributed.
+
+<br> 
+
+### **Checking homogeneity of variance (homoscedasticity) assumption**
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Plots
+ols_plot_resid_fit(slr)
+
+#Breusch Pagan Test for Heteroskedasticity
+ols_test_breusch_pagan(slr)
+
+```
+
+
+**INTERPRETATION**: The *Residual vs Fitted Values* plot shows smaller variance for smaller fitted values and larger variance for larger fitted values. There is an observable *funnel-type* or *V* pattern in the plot indicating non-constant or unequal variance (*heteroscedasticity*). This is confirmed by the Breusch-Pagan test at the 5% level of significance.
+
+<br>
+
+### **Checking independence assumption**
+
+According to this assumption, adjacent residuals must be uncorrelated or independent. One way to achieve this is making sure that the data do not exhibit any kind of clustering or hierarchical relationship. The Durbin-Watson test is oftentimes used to check this assumption. A significant test result indicates violation of the independence assumption and the residuals are known as *autocorrelated*. 
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+durbinWatsonTest(slr)
+
+check_autocorrelation(slr)
+```
+
+**INTERPRETATION**: The Durbin-Watson test result is not significant therefore the residuals are independent.
+
+### **Checking outliers and influential observations**
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+check_outliers(slr)
+```
+
+### **Modifying the model**
+Let us try to transform the sales data using logarithmic formula and refit the model.
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+slr1 <- lm(log(sales) ~ TV,
+           data = sales.data)
+
+check_heteroscedasticity(slr1)
+
+shapiro.test(slr1$residuals)
+```
+NOTES: The problem of heteroscedasticity is not solved and even made the residuals non-normal.
+
+<br>
+
+### **Use of robust standard errors to correct heteroscedasticity**
+
+Although heteroskedasticity does not produce biased OLS estimates, it leads to a bias in the variance-covariance matrix. This means that standard model testing methods such as t tests or F tests cannot be relied on any longer. 
+
+To apply robust standard errors to correct for the effect of heteroscedasticity on t test, we will use the <tt>coeftest()</tt> function in the **lmtest** package in combination with <tt>vcovHC()</tt> function in the **sandwich** package. 
+
+```{r }
+library(sandwich)
+coeftest(slr, vcov =vcovHC(slr, type="HC0"))
+```
+
+
+For multiple linear regression, we can use the <tt>waldtest()</tt> function also in the **lmtest** package to  adjust for heteroscedasticity instead of the <tt>anova()</tt> function. An example code is given below.
+
+```{r eval = FALSE}
+waldtest(MLR_model, vcov = vcovHC(MLR_model, type = "HC0"))
+```
+
+
+
+
+### **Weighted regression to correct heteroscedasticity**
+
+The idea of weighted regression is to assign higher weights to observations with lower variance and lower weights to observations with higher variance. There are several weighting procedures and the choice usually depends on the observed heteroscedasticity.
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+sales.data <- sales.data  %>% 
+  mutate(wt = 1 / lm(abs(slr$residuals) ~ slr$fitted.values)$fitted.values^2)
+
+head(sales.data)
+
+slr2 <- lm(sales ~ TV,
+           weights = wt,
+           data = sales.data)
+
+summary(slr2)
+
+check_heteroscedasticity(slr2)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+msummary(list("OLS" = slr, "Weighted OLS" = slr2))
+```
+
+<br>
+
+### **Interpretation of the model fit and the regression estimates**
+
+A. Model fit
+
+   1. $R^2 = 73\% \implies$ 73% of the variation in sales can be explained by its linear relationship with TV advertising expenses.
+   
+   2. The model significantly fits the data, F(1, 198)= 534.7 p< 2.2e-16.
+   
+   3. The $RMSE = 1.249$ is small and close to zero. 
+   
+Based on the above overall measures of fit, the model adequately fits the data.
+
+
+B. Inference on the regression coefficients
+
+Note that the sales variable is in thousands of units, and the TV variable is in thousands of dollars. Thus, an increase of $1,000 in the TV advertising budget is associated with an increase in sales by around 53 units. This effect is significant, t(1) =  23.12, p < 0.001. 
+
+C. Predictions
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+library(ggeffects)
+ggeffect(slr2)
+```
+
+<br>
+<br>
+
+# **Multiple linear regression model**
+
+Oftentimes, a regression model with a single predictor variable is not enough to provide an adequate description of the response variable. This occurs when several key variables affect the response variable in important and predictive ways.
+
+The multiple linear regression model is
+$$
+Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p + \epsilon
+$$
+
+where:
+
+   - $\beta_0, \beta_1, \cdots, \beta_p$ are the regression coefficients
+   
+   - $\epsilon$ is the random error, $\epsilon \sim N(0, \sigma^2)$
+
+NOTES:
+
+
+$\beta_0$ is the regression constant or intercept and is the value of Y when all X’s are equal to zero; must be interpreted with caution
+
+$\beta_1$ is the estimated mean response for every 1 unit change in $X_1$, holding all other X’s constant
+
+$\beta_2$ is the estimated mean response for every 1 unit change in $X_2$, holding all other X’s constant
+
+$\vdots$
+
+and so on
+
+<br>
+
+## **An example of MLR analysis**
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Import another data set
+triticum <- read_excel("Data/triticum.xlsx")
+
+head(triticum)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Examining correlations and density plots
+triticum %>% 
+  select(-c(DSeed)) %>% 
+  ggpairs()
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Regression model fitting
+mlr1 <- lm(Weight ~ Length + Diameter + Moisture + Hardness,
+           data = triticum)
+
+summary(mlr1)
+
+par(mfrow=c(2,2))
+plot(mlr1)
+```
+
+<br>
+
+
+### **Checking model assumptions**
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Rainbow test for linearity
+raintest(mlr1)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Shapiro-Wilk test for normality
+shapiro.test(mlr1$residuals)
+
+check_outliers(mlr1)
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Breusch Pagan Test for Heteroskedasticity
+ols_test_breusch_pagan(mlr1)
+
+check_heteroscedasticity(mlr1)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Testing autocorrelation
+durbinWatsonTest(mlr1)
+
+check_autocorrelation(mlr1)
+
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Checking multicollinearity
+library(regclass)
+VIF(mlr1)
+```
+
+**REMARKS**: 
+
+1. Multicollinearity occurs when there is strong correlations between explanatory variables. If multicollinearity is present the effect of one explanatory variable maybe masked with the effect of the other explanatory variables. In other words, one explanatory variable carries the same information as the other explanatory variables. The *Variance inflation factor (VIF)*  measures how much the variance of a regression coefficient is inflated due to multicollinearity in the model. In practice, $VIF < 10$ is acceptable.
+
+2. In the model above, the VIF of *Length* and *Diameter* are above 10. Thus, multicollinearity is present. 
+
+3. One solution is to retain only one of the strongly correlated regressors. Another approach is to compute a (linear) combination of highly correlated regressions, say via principal component analysis (PCA) or other logical mathematical forms. For example, we can alculate the length-to-diameter ratio (LDR) and use it as a regressor in lieu of *Length* and *Diameter*.
+
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+mlr2 <- lm(Weight ~ Length + Moisture + Hardness, 
+           data=triticum)
+
+summary(mlr2)
+
+shapiro.test(rstandard(mlr2))
+
+check_outliers(mlr2)
+               
+ols_test_breusch_pagan(mlr2)
+
+durbinWatsonTest(mlr2)
+
+VIF(mlr2)
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+mlr3 <- lm(Weight ~ Diameter + Moisture + Hardness, 
+           data=triticum)
+
+summary(mlr3)
+
+shapiro.test(rstandard(mlr3))
+
+check_outliers(mlr3)
+
+ols_test_breusch_pagan(mlr3)
+
+durbinWatsonTest(mlr3)
+
+VIF(mlr3)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+triticum <- triticum %>% 
+  mutate(LDR = Length/Diameter)
+
+mlr4 <- lm(Weight~LDR + Moisture + Hardness, data=triticum)
+
+summary(mlr4)
+
+shapiro.test(rstandard(mlr4))
+
+check_outliers(mlr4)
+
+ols_test_breusch_pagan(mlr4)
+
+durbinWatsonTest(mlr4)
+
+VIF(mlr4)
+```
+
+<br>
+
+### **Model selection** 
+
+- Select the most _parsimonious_ model from several competing models
+
+- Principle of parsimony (Occam's Razor): [__the correct explanation is the simplest explanation__](https://www.oreilly.com/library/view/the-r-book/9780470510247/ch009-sec004.html)
+
+- There are many statistics for model selection, e. g., _Akaike Information Criterion_ (AIC), *Bayesian Information Criterion*
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+msummary(list("Model 1" = mlr1, 
+              "Model 2" = mlr2, 
+              "Model 3" = mlr3, 
+              "Model 4" = mlr4),
+         estimate = " {estimate} {stars}")
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+mae <- c(MAE(mlr1),MAE(mlr2), MAE(mlr3), MAE(mlr4))
+mape <- c(MAPE(mlr1),MAPE(mlr2), MAPE(mlr3), MAPE(mlr4))
+data.frame(mae, mape)
+```
+
+**INTERPRETAION**
+
+1. Based on the the assumption checks, measures of fit (F, R2 Adj., RMSE), AIC, and BIC, it is clear that Model 3 (Diameter, Moisture, Hardness as predictors) generally outperforms the other 3 models. 
+
+2. A 1-cm increase in the diameter of a seed corresponds to an increase of 27.05 g in seed weight, assuming moisture and hardness are fixed. This effect is significant, t(1) = 26.381, p<0.001. 
+
+3. The sign of the estimates for moisture and hardness are negative indicating negative effect on weight.
+
+<br>
+<br>
+
+### **Training and Testing a Model**
+
+It is a common practice to split a data set into *training* and *testing* sets. The reasons for doing this are:
+
+1. Prevent Overfitting: By splitting the data, you ensure that the model isn’t just memorizing the training data but is able to generalize well to unseen data.
+
+2. Unbiased Evaluation: Using a separate test set provides an unbiased evaluation of the model’s performance.
+
+3. Hyperparameter Tuning: Validation sets help in tuning the model’s hyperparameters to improve performance.
+
+
+The training set is used to build the model while the test set is used to provide an unbiased evaluation of a final model fit on the training dataset.
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Data splitting
+set.seed(123)
+
+split <- initial_split(data = triticum,
+                       prop = 0.8)
+
+train.data <- training(split)
+test.data <- testing(split)
+
+dim(train.data)
+
+dim(test.data)
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Fitting the model to the training set
+mlr5 <- lm(Weight ~ Diameter + Moisture + Hardness + Maturity,
+           data = train.data)
+
+summary(mlr5)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Evaluating the model accuracy in the test set
+test.data <- test.data %>% 
+  mutate(Pred.wt = predict(mlr5, test.data))
+head(test.data)
+
+
+# Overall accuracy assessment
+postResample(pred = test.data$Pred.wt, 
+             obs = test.data$Weight)
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#Check model assumptions visually
+check_model(mlr5)
+
+#Visualize prediction
+
+ggeffect(mlr5) 
+
+ggeffect(mlr5) %>% 
+  plot() %>% 
+  plot_grid()
+
+```
+
+
+## **Reporting the results**
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+
+tbl_regression(mlr5,
+               add_pairwise_contrasts = TRUE,
+               pvalue_fun = label_style_pvalue(digits = 2)) %>% 
+  bold_p()
+```
+
