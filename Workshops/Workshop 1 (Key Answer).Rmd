@@ -1,0 +1,132 @@
+---
+title: "WORKSHOP 1"
+author: "NE Milla, Jr."
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+subtitle: Key Answer
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading packages
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+library(readxl)
+library(tidyverse)
+library(gtsummary)
+```
+
+# Loading the “World happiness data 2018-2023.xlsx”
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+setwd("D:/Training and Seminars/2025/UP Visayas/Slides")
+happiness <- read_excel("Data/World happiness data 2018-2023.xlsx")
+happiness1 <- happiness %>% 
+  rename("Year" = "year",
+         "Country" = "country",
+         "Region" = "region",
+         "Happiness" = "happiness_score",
+         "GDP" = "gdp_per_capita",
+         "Social_Support" = "social_support",
+         "Life_Expectancy" = "healthy_life_expectancy",
+         "Freedom" = "freedom_to_make_life_choices",
+         "Generosity" = "generosity",
+         "Corruption" = "perceptions_of_corruption")
+names(happiness1)
+```
+
+# Summary statistics: Happiness index of countries in Southeast Asia
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+happiness1 %>% 
+  select(Year, Country, Region, Happiness) %>% 
+  filter(Region == "Southeast Asia") %>% 
+  group_by(Country) %>% 
+  summarize(N = length(Happiness),
+            M = mean(Happiness),
+            SD = sd(Happiness)) %>% 
+  arrange(-M)
+```
+
+
+
+# Summary statistics: Corruption index of countries in Southeast Asia
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+happiness1 %>% 
+  select(Year, Country, Region, Corruption) %>% 
+  filter(Region == "Southeast Asia") %>% 
+  group_by(Country) %>% 
+  summarize(N = length(Corruption),
+            M = mean(Corruption),
+            SD = sd(Corruption)) %>% 
+  arrange(-M)
+```
+
+
+
+# Summary statistics: Happiness index by year & region
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+happiness1 %>% 
+  select(Year, Region, Happiness) %>% 
+  drop_na(Happiness) %>% 
+  group_by(Year, Region) %>% 
+  summarize(N = length(Happiness),
+            M = mean(Happiness),
+            SD = sd(Happiness)) %>% 
+  arrange(-Year,-M)
+```
+
+# Summary statistics: All variables for countries in Southeast Asia in year 2022 & 2023
+
+```{r}
+happiness1 %>% 
+  filter(Year %in% c(2022, 2023)) %>% 
+  filter(Region == "Southeast Asia") %>% 
+  drop_na() %>% 
+  tbl_summary(by = Country,
+              include = c(-Year, -Country, -Region),
+              statistic = list(all_continuous() ~ "{mean} ({sd}) \n {median}"))
+```
+
+
+# Crosstab corruption level by region
+
+```{r}
+happiness1 %>%
+  filter(Year == 2023) %>%
+  group_by(Region) %>% 
+  summarize(M = round(mean(Corruption, na.rm=TRUE),2)) %>% 
+  left_join(happiness1, by="Region") %>% #Using left_join() function
+  select(Year, Region, Corruption, M) %>% 
+  mutate("Corruption Level" = if_else(Corruption <= M, "Below Average",
+                                "Above Average"),
+         Corruption=round(Corruption,2)) %>% 
+  select(Region, "Corruption Level") %>% 
+  drop_na() %>% 
+  tbl_cross(percent = "row") %>% 
+  bold_labels()
+```
+
+
+
+
+```{r}
+happiness1 %>%
+  filter(Year == 2023) %>%
+  group_by(Region) %>% 
+  summarize(M = round(mean(Corruption, na.rm=TRUE),2)) %>% 
+  merge(happiness1, by="Region") %>% #Using merge() function
+  select(Year, Region, Corruption, M) %>% 
+  mutate("Corruption Level" = if_else(Corruption <= M, "Below",
+                                "Above Average"),
+         Corruption=round(Corruption,2)) %>% 
+  select(Region, "Corruption Level") %>% 
+  drop_na() %>% 
+  tbl_cross(percent = "row") %>% 
+  bold_labels()
+```
