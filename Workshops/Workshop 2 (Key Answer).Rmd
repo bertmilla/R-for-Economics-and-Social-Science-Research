@@ -1,0 +1,202 @@
+---
+title: "WORKSHOP 2"
+author: "NE Milla, Jr."
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+subtitle: Key Answer
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading packages
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+library(readxl)
+library(tidyverse)
+library(plotly)
+
+```
+
+# Loading the “World happiness data 2018-2023.xlsx”
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+setwd("D:/Training and Seminars/2025/UP Visayas/Slides")
+happiness <- read_excel("Data/World happiness data 2018-2023.xlsx")
+
+happiness1 <- happiness %>% 
+  rename("Year" = "year",
+         "Country" = "country",
+         "Region" = "region",
+         "Happiness" = "happiness_score",
+         "GDP" = "gdp_per_capita",
+         "Social_Support" = "social_support",
+         "Life_Expectancy" = "healthy_life_expectancy",
+         "Freedom" = "freedom_to_make_life_choices",
+         "Generosity" = "generosity",
+         "Corruption" = "perceptions_of_corruption")
+```
+
+# Crosstab corruption level by region
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+happiness1 %>%
+  filter(Year == 2023) %>%
+  group_by(Region) %>% 
+  summarize(M = round(mean(Corruption, na.rm=TRUE),2)) %>% 
+  left_join(happiness1, by="Region") %>% #Using left_join() function
+  select(Year, Region, Corruption, M) %>% 
+  mutate("CorruptLevel" = if_else(Corruption <= M, "Below Average",
+                                "Above Average"),
+         Corruption=round(Corruption,2)) %>% 
+  select(Region, CorruptLevel) %>% 
+  group_by(Region) %>% 
+  drop_na() %>% 
+  count(CorruptLevel) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x = Region,
+             y = n,
+            fill = CorruptLevel)) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           col = "black") +
+  scale_fill_manual(values = c("Above Average" = "gray", 
+                               "Below Average" = "lightblue")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust=1)) +
+  scale_y_continuous(expand=c(0,0),
+                     limits = c(0,150))+
+  labs(x = "Region",
+       y = "No. of countries",
+       fill = "Corruption Level") +
+  coord_flip() +
+  theme_classic()
+```
+
+# Bar plot of the mean of healthy life expectancy for all three regions in Asia
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+happiness1 %>% 
+  select(Region, Life_Expectancy) %>% 
+  filter(Region %in% c("East Asia", "South Asia", "Southeast Asia")) %>% 
+  group_by(Region) %>% 
+  summarize(n = length(Life_Expectancy),
+            Mean = mean(Life_Expectancy),
+            SD = sd(Life_Expectancy)) %>% 
+  mutate(SE = SD/sqrt(n)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=Region, y = Mean)) +
+  geom_col(fill= "lightblue", 
+           col="black", 
+           width = 0.5) +
+  geom_errorbar(aes(ymin = Mean-SE, 
+                    ymax = Mean+SE),
+                size = .7,
+                width = 0.15) + 
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0,1))+
+  theme_classic()
+```
+
+# scatter plots of GDP and happiness score: 2022 & 2023
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+g1 <- happiness1 %>% 
+  select(Year, GDP, Happiness) %>% 
+  filter(Year %in% c(2022, 2023)) %>% 
+  mutate(Year = factor(Year)) %>% #To convert year as categorical variable
+  ggplot(aes(x = GDP,
+             y = Happiness,
+             color = Year)) +
+  geom_point(size = 1.3,
+             alpha = 1.5) +
+  labs(x = "GDP",
+       y = "Happiness") +
+  theme(legend.position = "none")+ #To remove the legend
+  facet_wrap(~factor(Year)) +
+  theme_classic() 
+  
+ggplotly(g1)
+  
+```
+
+# Animated plot of freedom to make life choices and happiness score
+
+```{r eval=FALSE}
+g2 <- happiness1 %>% 
+  select(Year, Freedom, Happiness) %>% 
+  ggplot(aes(x = Freedom, 
+             y = Happiness)) +
+  geom_point(aes(frame = as.integer(Year))) +
+  theme_classic()
+
+ggplotly(g2)
+```
+
+
+# Animated plots using gganimate
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+library(gganimate)
+happiness1 %>% 
+  select(Year, Freedom, Happiness) %>% 
+  ggplot(aes(x = Freedom, 
+             y = Happiness)) +
+  geom_point(color = "maroon")  +
+  labs(title = 'Year: {frame_time}') +
+  transition_time(as.integer(Year)) + #To ensure the years will be treated as integer
+  theme_classic()
+```
+
+
+# Density plot of happiness index
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+happy <- happiness1 %>% 
+  ggplot(aes(x = Happiness)) +
+  geom_density(fill = "lightblue") +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_classic()
+```
+
+# Density plot of GDP
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+gdp <- happiness1 %>% 
+  ggplot(aes(x = GDP)) +
+  geom_density(fill = "lightblue") +
+  scale_y_continuous(expand = c(0,0))+
+  theme_classic()
+```
+
+
+# Density plot of Freedom
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+free <- happiness1 %>% 
+  ggplot(aes(x = Freedom)) +
+  geom_density(fill = "lightblue") +
+  scale_y_continuous(expand = c(0,0))+
+  theme_classic()
+```
+
+
+# Density plot of Life Expectancy
+
+```{r}
+life <- happiness1 %>% 
+  ggplot(aes(x = Life_Expectancy)) +
+  geom_density(fill = "lightblue") +
+  scale_y_continuous(expand = c(0,0))+
+  theme_classic()
+```
+
+
+# Combining the four plots
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+library(patchwork)
+(happy + gdp) / (free + life)
+```
+
