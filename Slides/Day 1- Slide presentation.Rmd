@@ -1,0 +1,798 @@
+---
+title: "R for Economics and Social Sciences Research"
+subtitle: " "
+author: "Norberto E. Milla, Jr."
+institute: "Visayas State University"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    css: ["default", "chocolate", "rladies-fonts"]
+    lib_dir: libs
+    seal: false
+    nature:
+      beforeInit: "cols_macro.js"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE,	
+                      warning = FALSE,
+                      eval = TRUE,
+                      tidy = FALSE)
+
+library(haven)
+library(readxl)
+library(tidyverse)
+library(gtsummary)
+library(rstatix)
+library(ggpubr)
+library(ggstatsplot)
+library(rempsyc)
+library(flextable)
+library(ISLR2)
+library(GGally)
+library(corrplot)
+```
+
+
+class: center, middle
+
+
+# R for Economics and Social Science Research 
+
+#### Norberto E. Milla, Jr.
+
+---
+
+class: center, middle
+
+# Day 1: Introduction to R
+
+---
+
+#  Overview of R and RStudio
+
+```{r echo = FALSE, out.width="15%", fig.align='left'}
+knitr::include_graphics("pic3.png")
+```
+
+* is open source and freely available
+
+* is a cross-platform language
+
+* has an extensive and coherent set of tools for statistical analysis
+
+* has an extensive and highly flexible graphical facility for producing publication-ready graphics
+
+* has an expanding set of freely available ‘packages’ to extend R’s capabilities
+
+* has an extensive support network with numerous online and freely available documents
+
+---
+#  Overview of R and RStudio
+
+* RStudio is an add-on user-friendly interface to R 
+
+* It incorporates the R Console, a script editor and other useful functionality
+
+```{r echo = FALSE, out.width="100%"}
+knitr::include_graphics("pic1.png")
+```
+
+
+---
+# Installing and loading packages
+
+* R packages are collections of functions, data sets, and documentation that enhance R's functionality (e. g. <tt>tidyverse</tt>, <tt>ggplot2</tt>, <tt>readxl</tt>)
+
+* They help users to efficiently perform specific tasks more easily
+
+* Many R packages can be downloaded from the Comprehensive R Archiving Network (CRAN): *>22,000 packages*
+
+* Type in the Console <tt>install.packages("*packagename*")</tt>
+
+* Alternative: Click **Tools** in the Menu bar and select *Install Packages...*
+
+
+```{r echo = FALSE, out.width="45%", fig.align='center'}
+knitr::include_graphics("pic2.png")
+```
+
+---
+
+# Data types and basic operations
+
+* R **objects** are fundamental data containers: <tt>vectors</tt>, <tt>matrices</tt>, <tt>data frames</tt>, <tt>lists</tt>, and <tt>functions</tt>
+
+* Objects are created using the assignment operator: <tt>*<-*</tt>
+
+```{r }
+a <- 10
+b <- 5
+c <- sqrt(a^2 + b^2)
+print(c)
+```
+
+* A few rules in naming objects in R:
+
+   - R is case-sensitive: <tt>Weight</tt> is different from <tt>weight</tt>
+   
+   - Object names should be explicit and not too long
+   
+   - Do not start a name with a number such as <tt>2cm</tt>
+   
+
+---
+
+# Data types and basic operations: vector
+
+* one-dimensional arrays that hold elements of the same type, such as numbers, characters, or logical values
+
+```{r}
+numeric_vector <- c(1, 2, 3, 4)          # Numeric vector
+character_vector <- c("apple", "banana") # Character vector
+logical_vector <- c(TRUE, FALSE, TRUE)   # Logical vector
+```
+
+```{r}
+numeric_vector
+character_vector
+logical_vector
+```
+
+---
+
+# Data types and basic operations: vector
+
+
+
+```{r}
+x <- c(1, 2, 3) 
+y <- c(4, 5, 6)
+x + y # Adds the elements of x and y
+y^x # y is raised to power x
+x * y # To get the product of the elements of x and y
+```
+
+---
+# Data types and basic operations: vector
+
+* Elements of a vector can be accessed as follows: 
+
+```{r}
+set.seed(1234) # Allows to generate the same set of random numbers
+z <- rnorm(n = 6, mean = 0, sd = 1)
+z # Prints all elements of z
+z[4] # Extracts the 4th element of z
+z[4:6] # Extracts the 4th through the 7th elements of z
+z[c(1,3,5)] # Extracts the 1st, ,3rd, and 5th elements of z
+```
+---
+# Data types and basic operations: vector
+
+* Basic functions in working with vectors: <tt>length()</tt>, <tt>sum()</tt>, <tt>mean()</tt>, <tt>sd()</tt>
+
+```{r}
+length(z) # Determines the number of elements of z
+sum(z) # Determines the sum of the elements of z
+mean(z) # Calculates the mean/average of the elements of z
+sd(z) # Calculates the standard deviation of the elements of z
+```
+
+---
+# Data types and basic operations: matrix
+
+* two-dimensional arrangement of data (of same type) in rows and columns
+
+* are collections of vectors organized into rows and columns
+```{r}
+A <- matrix(1:9, nrow = 3, ncol = 3, byrow = TRUE) # Create a 3x3 numeric matrix
+print(A)
+
+B <- matrix(1:9, nrow = 3, ncol = 3, byrow = FALSE) # Create a 3x3 numeric matrix
+print(B)
+```
+
+---
+# Data types and basic operations: matrix
+
+* Addition, subtraction and multiplication of matrices are shown below:
+
+
+```{r}
+A + B # Addition
+
+A - B # Subutraction
+
+A %*% B # Multiplication
+```
+
+---
+# Data types and basic operations: list
+
+* Used to store mixtures of data types
+```{r}
+mylist <- list(char_vector = c("black", "yellow", "orange"),
+               logic_vector = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE),
+               num_mat= matrix(1:6, nrow = 3))
+print(mylist)
+```
+
+---
+# Data types and basic operations: list
+
+* We can apply indexing to extract one or more elements of a list just like in a vector
+
+```{r}
+print(mylist[2]) # Prints the logical vector
+
+print(mylist[3]) # Prints the numeric matrix
+```
+
+---
+# Data types and basic operations: data frame
+
+.pull-left[
+* a two-dimensional, tabular data structure where each column can contain elements of different data types (numeric, character, logical, etc.)
+
+* every row corresponds to an observation or case (e. g. student, firm, university); a column corresponds to a variable (e. g. age, sex, marital status)
+
+* most commonly used data structure for statistical analysis and data manipulation
+]
+
+.pull-right[
+```{r echo = FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("pic4.png")
+```
+]
+
+---
+# Data types and basic operations: data frame
+
+```{r}
+stud_height <- c(180, 155, 160, 167, 181, 165)
+stud_weight <- c(65, 50, 52, 58, 70, 60)
+stud_names <- c("Theo", "Anthony", "Vincent", "Angelo", "Lee", "Antonette")
+
+stud_record <- data.frame(Names = stud_names, 
+                          Height = stud_height, 
+                          Weight = stud_weight)
+
+print(stud_record)
+```
+---
+# R Markdown
+
+- a simple and easy to use plain text language where one can type R codes and see the results (e.g. plots and tables) after running these codes in the one document
+
+- useful to generate a single nicely formatted and reproducible document (like a report, publication, thesis chapter or a web page, slides)
+
+- the document can be rendered in HTML, pdf, or Word format
+
+```{r echo=F, out.width="65%", fig.align='center'}
+knitr::include_graphics("pic8.png")
+```
+
+---
+# Data management: importing data
+
+* We can import data sets using various functions in R
+
+   - <tt>read.table()</tt> for text (*.txt*)  files
+   
+   - <tt>read.csv()</tt> for Comma-delimited Excel (*.csv*)  files
+   
+   - <tt>read_dta()</tt> or <tt>read_stata()</tt> for Stata (*.dta*) files [**haven** package]
+   
+   - <tt>read_excel()</tt> for Excel (*.xls* or *.xlsx*) files [**readxl** package]
+
+---
+# Data management: importing data
+
+**Setting up the working directory**
+
+- Type in the Console <tt>setwd("path")</tt>
+
+- Click **Session** in the menu bar, select  **Set Working Directory** then **Choose Directory..**
+
+- Click **Files** in the <tt>Files, Plots, Packages, Help</tt> pane in RStudio. Then click the icon (encircled) shown below. Browse to the desired folder.
+
+```{r echo=F, out.width="35%", fig.align='center'}
+knitr::include_graphics("pic5.png")
+```
+
+- Then click the gear icon (encircled) shown below and select *Set As Working Directory*
+
+```{r echo=F, out.width="35%", fig.align='center'}
+knitr::include_graphics("pic6.png")
+```
+
+
+---
+# Data management: importing data
+
+```{r}
+ndhs <- read_stata("PHBR82FL.DTA")
+head(ndhs)
+```
+
+---
+# Data management: importing data
+
+```{r}
+library(haven)
+library(readxl)
+ets1 <- read_excel("Profile of on-going students (Region 1).xlsx")
+head(ets1)
+```
+
+---
+# Data management: data wrangling 
+
+Common verbs in the **dplyr** package:
+
+- <tt>select()</tt>: picks variables based on their names
+
+- <tt>filter()</tt>: picks cases based on their values
+
+- <tt>mutate()</tt>: adds new variables that are functions of existing variables
+
+- <tt>summarize()</tt>: generates summary statistics such as mean, median, and SD
+
+- <tt>group_by()</tt>: generate summaries by group
+
+- <tt>arrange()</tt>: changes the ordering of the rows
+
+- <tt>rename()</tt>: replace the name of a variable
+
+---
+# Data management: data wrangling
+
+The **tidyverse** package:  collection of R packages designed for data science
+
+```{r echo=FALSE, fig.align='center', out.width="70%"}
+knitr::include_graphics("pic7.png")
+```
+
+
+---
+
+# Data management: data wrangling
+
+```{r }
+ets1 %>% # pipe operator (CNTRL + SHIFT + M)
+  select(Target, Age, Sex, HHsize, GWA, HS_type, Strand) %>% 
+  head()
+```
+
+---
+# Data management: data wrangling
+
+```{r }
+ets1 %>%
+  select(Target, Age, Sex, HHsize, GWA, HS_type, Strand) %>% 
+  mutate(Sex_recode = recode(Sex,
+                             "0" = "Male",
+                             "1" = "Female")) %>%
+  head(n=10)
+```
+
+---
+
+# Data management: data wrangling
+
+```{r }
+ets1 %>%
+  select(Target, Age, Sex, HHsize, GWA, HS_type, Strand) %>% 
+  mutate(Sex_recode = recode(Sex,
+                             "0" = "Male",
+                             "1" = "Female")) %>%
+  filter(GWA>90 & Sex_recode == "Male")
+```
+
+---
+
+# Data management: data wrangling
+
+```{r }
+ets1 %>%
+  select(Target, Age, Sex, HHsize, GWA, HS_type, Strand) %>% 
+  mutate(Sex_recode = recode(Sex,
+                             "0" = "Male",
+                             "1" = "Female")) %>%
+  drop_na(Age) %>% 
+  mutate(Age_Cat = if_else(Age<=20, "Less than 20",
+                           if_else(Age<=30,"21-30",
+                                   "31 & up")))
+```
+---
+
+# Data management: data wrangling
+
+```{r }
+ets1 %>%
+  select(Target, Age, Sex, HHsize, GWA, HS_type, Strand) %>% 
+  mutate(Sex_recode = recode(Sex,
+                             "0" = "Male",
+                             "1" = "Female")) %>%
+  drop_na(Age) %>% 
+  arrange(Age) %>% 
+  mutate(Age_Cat = cut(Age,
+                       breaks = 3,
+                       labels = c("AgeGrp1", "AgeGrp2", "AgeGrp3"))) %>% 
+  group_by(Age_Cat) %>% 
+  count()
+```
+
+---
+class: center, middle
+
+## LUNCH BREAK
+---
+# Descriptive statistics: frequency tables
+```{r}
+etsdata <- ets1 %>%
+  select(Target, Age, Sex, HHsize, GWA, HS_type, Strand, ) %>% 
+  mutate(Target = recode(Target,
+                         "0" = "General Students",
+                         "1" = "Equity Target Students"),
+         Sex = recode(Sex,
+                      "0" = "Male",
+                      "1" = "Female"),
+         HHsize = recode(HHsize,
+                         "1" = "Small",
+                         "2" = "Medium",
+                         "3" = "Large"),
+         HS_type = recode(HS_type,
+                          "0" = "Public",
+                          "1" = "Private"),
+         Strand = recode(Strand,
+                         "0" = "Non-STEM",
+                         "1" = "STEM"))
+```
+
+
+
+---
+# Descriptive statistics: frequency tables
+
+```{r }
+etsdata %>% 
+  select(Sex, Strand) %>% 
+  tbl_summary()
+```
+
+---
+# Descriptive statistics: frequency tables
+
+```{r }
+etsdata %>%
+  select(Sex, Strand) %>% 
+  tbl_summary(by = Strand)
+```
+---
+# Descriptive statistics: frequency tables
+
+```{r }
+etsdata %>%
+  select(Sex, Strand) %>% 
+  tbl_cross(percent = "row") %>% 
+  bold_labels() %>% 
+  add_p(source_note=TRUE)
+```
+---
+
+# Descriptive statistics: numerical summaries
+
+```{r }
+etsdata %>%
+  select(Age, Sex) %>% 
+  group_by(Sex) %>% 
+  drop_na(Age) %>% 
+  summarize(N=length(Age),
+            Mean=mean(Age),
+            Median=median(Age),
+            SD=sd(Age),
+            Min=min(Age),
+            Max=max(Age))
+```
+
+---
+# Descriptive statistics: numerical summaries
+
+```{r }
+etsdata %>%
+  select(HHsize, Age, GWA) %>% 
+  drop_na(Age,GWA) %>% 
+  tbl_summary(by = HHsize,
+              include = c(Age,GWA),
+              statistic = list(all_continuous() ~ "{mean} ({sd})"))
+```
+
+---
+
+# Quick review of hypothesis testing
+
+- **Testing hypotheses**: a procedure used to decide which of two competing hypotheses are consistent with data observed in a random sample
+
+   - **Null hypothesis** ($H_0$): hypothesis indicating no "effect" (no change, no improvement, no correlation)
+   
+   - **Alternative hypothesis** ($H_1$): researcher's hypothesis that indicates an "effect" 
+   
+   - **Test statistic**: a summary of the observed data in the random sample that is used as evidence *for* or *against* the null hypothesis
+   
+   - **Level of significance**: the probability of wrongly rejecting a true null hypothesis ($\alpha = 0.01, \mathbf{0.05}$)
+   
+   - **p-value**: the chance that the observed results (or more extreme results) would occur **IF** the null hypothesis were true
+   
+      - Smaller p-values indicate *disagreement* between the observed data and the null hypothesis: **Reject $H_0$ if p-value $\leq \alpha$**
+
+---
+
+# Statistical tests on means
+
+- Tests on means of two independent groups
+
+   - <tt>Student's t test</tt>: *normal distributions with equal variances*
+   
+   - <tt>Welch's t test</tt>: *normal distributions with unequal variances*
+   
+   - <tt>Mann-Whitney U test</tt>: *non-normal distribution*
+
+- Tests on means of two matched/paired groups
+
+   - <tt>Paired t test</tt>: *normally distributed pairwise differences*
+   
+   - <tt>Signed rank test</tt>: *non-normal pairwise differences*
+---
+# Statistical tests on means
+
+```{r }
+etsdata %>%
+  select(Strand, GWA) %>% 
+  drop_na(GWA) %>% 
+  tbl_summary(by = Strand,
+              include = GWA,
+              statistic = list(all_continuous() ~ "{mean} ({sd})"))
+```
+
+- $H_0: \mu_S = \mu_N$, where: S = STEM, N=Non-STEM
+
+- $H_1: \mu_S > \mu_N$
+---
+# Statistical tests on means
+```{r}
+# Test of Normality
+etsdata %>% 
+  select(Strand, GWA) %>% 
+  group_by(Strand) %>% 
+  shapiro_test(GWA)
+```
+
+```{r}
+# Test of Equal Variance
+etsdata %>% 
+  select(Strand, GWA) %>% 
+  levene_test(GWA ~ Strand)
+```
+
+---
+# Statistical tests on means
+```{r }
+etsdata %>% 
+  select(Strand, GWA) %>% 
+  drop_na(GWA) %>% 
+  wilcox.test(GWA ~ Strand, 
+         data = .,
+         alternative = "less")
+```
+
+---
+# Statistical tests on means
+
+```{r }
+etsdata %>%
+  select(Strand, Age, GWA) %>% 
+  drop_na(Age, GWA) %>% 
+  tbl_summary(by = Strand,
+              include = c(Age, GWA),
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>% 
+  add_p(test = list(all_continuous() ~ "wilcox.test"),
+        test.args = all_tests("wilcox.test") ~ list(var.equal = TRUE))
+```
+
+
+---
+# Statistical tests on means
+```{r eval=FALSE, out.width="40%", fig.align='center'}
+etsdata %>% 
+  select(Strand, GWA) %>% 
+  ggbetweenstats(x = Strand,
+                 y = GWA,
+                 violin.args = list(width = 0),
+                 type = "nonparametric",
+                 var.equal = TRUE,
+                 bayes.args = list(width=0))
+```
+
+---
+# Statistical tests on means
+```{r eval=TRUE, echo=FALSE, out.width="65%", fig.align='center'}
+etsdata %>% 
+  select(Strand, GWA) %>% 
+  ggbetweenstats(x = Strand,
+                 y = GWA,
+                 violin.args = list(width = 0),
+                 type = "nonparametric",
+                 var.equal = TRUE,
+                 bayes.args = list(width=0))
+```
+
+---
+# Statistical tests on means
+.pull-left[
+```{r eval=FALSE}
+etsdata %>% 
+  select(HHsize, GWA) %>% 
+  ggbetweenstats(x = HHsize,
+                 y = GWA,
+                 violin.args = list(width = 0),
+                 type = "nonparametric",
+                 var.equal = TRUE,
+                 bayes.args = list(width=0))
+```
+]
+
+.pull-right[
+```{r echo=FALSE}
+etsdata %>% 
+  select(HHsize, GWA) %>% 
+  ggbetweenstats(x = HHsize,
+                 y = GWA,
+                 violin.args = list(width = 0),
+                 type = "nonparametric",
+                 var.equal = TRUE,
+                 bayes.args = list(width=0))
+``` 
+]
+---
+# Correlation analysis: basic ideas
+
+- Correlation analysis is concerned with the analysis of linear relationship between two or more variables
+
+- It is used to determine the strength and direction, as well as statistical significance, of the correlation between variables
+
+- The correlation between two variables could be positive or negative
+
+- Positive correlation: $X\uparrow$ and $Y\uparrow$ or $X\downarrow$ and $Y\downarrow$
+
+- Negative correlation: $X\uparrow$ and $Y\downarrow$ or $X\downarrow$ and $Y\uparrow$
+
+---
+
+# Correlation analysis: scatter plot
+.pull-left[
+- It is a chart of the x-values (X-axis) and y-values (Y-axis) 
+
+- It is a visual representation of the relationship of X and Y
+
+- Also known as *scatter diagram*
+]
+
+.pull-right[
+```{r, echo=F, out.width="100%"}
+College %>% 
+  select(Top10perc, Grad.Rate) %>% 
+  ggscatterstats(x = Top10perc,
+                 y = Grad.Rate,
+                 type = "parametric",
+                 bf.message = FALSE)
+```
+]     
+    
+
+---
+# Correlation analysis: correlation coefficient
+
+- measures the strength or magnitude of the correlation between the variables
+
+   - **Pearson r**: both variables are measured in at least interval scale; bivariate normal distribution
+   
+   - **Spearman rho**: both variables are measured in at ordinal scale; non-normal data
+   
+   - **Point-biserial**: one variable is binary and the other is interval or ratio
+   
+   - **Rank-biserial**: one variable is binary and the other is ordinal
+
+   
+- the value of a correlation coefficient ranges from -1 to +1
+
+---
+
+# Correlation analysis: correlation coefficient
+
+- a zero correlation coefficient indicates that the variables are NOT LINEARLY independent
+
+```{r echo = FALSE, fig.align='center', out.width="55%"}
+knitr::include_graphics("pic9.png")
+```
+
+---
+# Correlation analysis: test of significance
+
+
+- $H_0$: Correlation coefficient is equal to zero. (There is no linear relationship between the variables.) $\Longrightarrow H_0: \rho = 0$
+   
+- $H_1$: Correlation coefficient is not equal to zero. (There is linear relationship between the variables.) $\Longrightarrow H_1: \rho \neq 0$
+
+- Test statistic:
+
+$$
+t = \frac{r \sqrt{n-2}}{\sqrt{1-r^2}}
+$$
+
+- Reject $H_0$ if p-value associated with $t$ is less than the significance level ($\alpha$)
+
+---
+# Correlation analysis
+
+```{r}
+shapiro.test(College$Top10perc)
+shapiro.test(College$Grad.Rate)
+```
+---
+# Correlation analysis
+
+```{r}
+cor.test(x = College$Top10perc,
+         y = College$Grad.Rate,
+         method = "spearman")
+```
+---
+
+# Correlation analysis
+
+```{r  out.width="55%", fig.align='center'}
+College %>% 
+  select(Top10perc, Grad.Rate) %>% 
+  ggscatterstats(x = Top10perc, y = Grad.Rate, type = "nonparametric",
+                 bf.message = FALSE)
+```
+
+---
+# Correlation analysis: visualization
+
+- <tt>corrplot()</tt> from the **corrplot** package
+
+- <tt>ggpairs()</tt> from the **GGally** package
+
+- <tt>ggcorr()</tt> also from the **GGally** package
+
+- <tt>pairs.panel()</tt> from the **psych** package
+
+---
+# Correlation analysis
+
+```{r out.width="55%", fig.align='center'}
+College %>% 
+  select(Top10perc, PhD, S.F.Ratio, Expend, Grad.Rate) %>% 
+  cor() %>% 
+  corrplot(type = "lower", tl.cex = .75, tl.col = "black")
+```
+
+---
+# Correlation analysis
+
+```{r out.width="55%", fig.align='center'}
+College %>% 
+  select(Private, Top10perc, PhD, S.F.Ratio, Expend, Grad.Rate) %>% 
+  mutate(Private = recode(Private, "No" = "Public", "Yes" = "Private")) %>% 
+  ggpairs(columns = 2:6, aes(colour = Private))
+```
+
+

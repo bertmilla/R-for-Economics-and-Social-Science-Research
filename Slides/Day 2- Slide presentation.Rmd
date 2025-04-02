@@ -1,0 +1,805 @@
+---
+title: "R for Economics and Social Sciences Research"
+subtitle: " "
+author: "Norberto E. Milla, Jr."
+institute: "Visayas State University"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    css: ["default", "nhsr", "nhsr-fonts"]
+    lib_dir: libs
+    seal: false
+    nature:
+      beforeInit: "cols_macro.js"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE,	
+                      warning = FALSE,
+                      eval = TRUE,
+                      tidy = FALSE)
+
+library(haven)
+library(readxl)
+library(tidyverse)
+library(gtsummary)
+library(rstatix)
+library(ggpubr)
+library(ggstatsplot)
+library(rempsyc)
+library(flextable)
+library(ISLR2)
+library(GGally)
+library(corrplot)
+library(plotly)
+library(gapminder)
+library(gganimate)
+```
+
+
+class: center, middle
+
+
+# R for Economics and Social Science Research 
+
+#### Norberto E. Milla, Jr.
+
+---
+
+class: center, middle
+
+# Day 2: Data Visualization with R
+
+---
+
+#  Introduction to Visualization
+.pull-left[
+- *"A picture is worth a thousand words”.*
+
+- a good visualization makes it easier to identify patterns and trends
+
+   - provides a quick and effective way to communicate information
+
+   - displays complex relationships among data
+
+   - highlights interesting and compelling "stories" from the data
+]
+
+.pull-right[
+
+```{r echo=FALSE, out.width="95%"}
+knitr::include_graphics("pic10.png")
+```
+
+]
+
+---
+# The ggplot2 package
+
+- **ggplot2** is a system for declaratively creating graphics which is inspired by the **Grammar of Graphics** book of *Leland Wilkinson (2005)*
+
+- the key idea behind **ggplot2** is that it allows to easily building up a complex plot layer by layer
+
+- each layer adds an extra level of information to the plot
+
+- sophisticated plots are build tailored to the problem at hand
+
+---
+# The ggplot2 package
+
+- using the <tt>ggplot()</tt> function we build a graph in layers
+
+- basic elements:
+
+   - **data**: the information you want to visualise
+   
+   - **mapping**: description of how the variables are mapped to aesthetic attributes
+      - *layer*: geometries and statistical summaries
+      
+      - *scale*: color, shape, size, legend
+      
+      - *coordinate system*: axes and gridlines 
+      
+      - *facet*: specifies how to break up and display subsets of data 
+      
+      - *theme*: controls the finer points of display, like the font size and background color
+      
+---
+# Basic plots: <tt>scatter plot</tt>
+```{r out.width="55%", fig.align='center'}
+library(carData)
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary))
+```
+---
+
+# Basic plots: <tt>scatter plot</tt>
+```{r out.width="55%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary)) +
+  geom_point()
+```
+
+---
+# Basic plots: <tt>scatter plot</tt>
+.pull-left[
+```{r eval = FALSE, out.width="55%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, 
+                     y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5) 
+```
+
+]
+
+.pull-right[
+```{r echo=FALSE, out.width="95%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5)
+```
+
+]
+---
+
+# Basic plots: <tt>scatter plot</tt>
+.pull-left[
+```{r eval = FALSE, out.width="55%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, 
+                     y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") 
+```
+
+]
+
+.pull-right[
+```{r echo=FALSE, out.width="95%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary")
+```
+
+]
+
+---
+# Basic plots: <tt>scatter plot</tt>
+.pull-left[
+```{r eval = FALSE, out.width="55%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, 
+                     y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm",
+              col = "red")
+```
+
+]
+
+.pull-right[
+```{r echo=FALSE, out.width="95%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary")+
+  geom_smooth(method="lm",
+              col = "red")
+```
+
+]
+---
+# Basic plots: <tt>scatter plot</tt>
+.pull-left[
+```{r eval = FALSE, out.width="55%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, 
+                     y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm",
+              col = "red") +
+  theme_classic()
+```
+
+]
+
+.pull-right[
+```{r echo=FALSE, out.width="95%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary)) +
+  geom_point(color = "blue",
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary")+
+  geom_smooth(method="lm",
+              col = "red") +
+  theme_classic()
+```
+
+]
+
+---
+# Basic plots: <tt>scatter plot</tt>
+.pull-left[
+```{r eval = FALSE, out.width="55%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, 
+                     y = salary,
+                     color = sex)) +
+  geom_point(size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm") +
+  theme_classic()
+```
+
+]
+
+.pull-right[
+```{r echo=FALSE, out.width="95%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary, color = sex)) +
+  geom_point(size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm") +
+  theme_classic()
+```
+]
+
+---
+
+# Basic plots: <tt>scatter plot</tt>
+.pull-left[
+```{r eval = FALSE, out.width="55%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, 
+                     y = salary)) +
+  geom_point(color = "lightblue",
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm",
+              col = "red") +
+  facet_wrap(~sex)+
+  theme_classic()
+```
+
+]
+
+.pull-right[
+```{r echo=FALSE, out.width="95%", fig.align='center'}
+ggplot(data = Salaries,
+       mapping = aes(x = yrs.service, y = salary)) +
+  geom_point(color = "lightblue", 
+             size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm", col = "red") +
+  facet_wrap(~sex)+
+  theme_classic()
+```
+
+]
+---
+
+# Basic plots: <tt>bar plot</tt>
+.pull-left[
+```{r eval=F}
+Salaries %>% 
+  select(rank) %>% 
+  ggplot(aes(x=rank)) +
+  geom_bar(fill="lightblue")+
+  labs(x="Rank", 
+       y = "No. of faculty") +
+  theme_classic()
+```
+]
+
+.pull-right[
+```{r echo=F}
+Salaries %>% 
+  select(rank) %>% 
+  ggplot(aes(x=rank)) +
+  geom_bar(fill="lightblue")+
+  labs(x="Rank", y = "No. of faculty") +
+  theme_classic()
+```
+
+]
+---
+
+# Basic plots: <tt>bar plot</tt>
+.pull-left[
+```{r eval=F}
+Salaries %>% 
+  select(rank) %>% 
+  ggplot(aes(x=rank)) +
+  geom_bar(fill="lightblue")+
+  labs(x="Rank", 
+       y = "No. of faculty") +
+  coord_flip()+
+  theme_classic()
+```
+]
+
+.pull-right[
+```{r echo=F}
+Salaries %>% 
+  select(rank) %>% 
+  ggplot(aes(x=rank)) +
+  geom_bar(fill="lightblue")+
+  labs(x="Rank", y = "No. of faculty") + 
+  coord_flip()+
+  theme_classic()
+```
+
+]
+
+---
+# Basic plots: <tt>bar plot</tt>
+.pull-left[
+```{r eval=FALSE}
+Salaries %>% 
+  select(rank) %>% 
+  count(rank) %>% 
+  mutate(p=round(n/sum(n)*100,1)) %>% 
+  ggplot(aes(x = reorder(rank,p),
+             y = p,
+             label = p)) +
+  geom_col(fill="lightblue", 
+           col = "black") +
+  geom_text(aes(label = p), 
+            hjust=-0.5,
+            size = 3.5) +
+  labs(x = " ",
+       y = "Percent (%)")+
+  coord_flip() +
+  theme_classic()
+```
+
+]
+.pull-right[
+```{r echo=FALSE}
+Salaries %>% 
+  select(rank) %>% 
+  count(rank) %>% 
+  mutate(p=round(n/sum(n)*100,1)) %>% 
+  ggplot(aes(x = reorder(rank,p),
+             y = p,
+             label = p)) +
+  geom_col(fill="lightblue", 
+           col = "black") +
+  geom_text(aes(label = p), 
+            hjust=-0.5,
+            size = 3.5) +
+  labs(x = " ",
+       y = "Percent (%)")+
+  coord_flip() +
+  theme_classic()
+```
+
+]
+
+---
+
+# Basic plots: <tt>bar plot</tt>
+
+.pull-left[
+```{r eval=FALSE}
+Salaries %>%
+  drop_na(salary) %>% 
+  group_by(rank) %>% 
+  summarize(n = length(salary),
+            Mean = mean(salary),
+            SD = sd(salary)) %>% 
+  mutate(SE = SD/sqrt(n)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=rank, y = Mean)) +
+  geom_col(fill= "lightblue", 
+           col="black", 
+           width = 0.5) +
+  geom_errorbar(aes(ymin = Mean-SE, 
+                    ymax = Mean+SE),
+                size = 0.7,
+                width = 0.15) +
+  theme_classic2()
+```
+]
+
+.pull-right[
+```{r echo=FALSE}
+Salaries %>%
+  drop_na(salary) %>% 
+  group_by(rank) %>% 
+  summarize(n = length(salary),
+            Mean = mean(salary),
+            SD = sd(salary)) %>% 
+  mutate(SE = SD/sqrt(n)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=rank, y = Mean)) +
+  geom_col(fill= "lightblue", 
+           col="black", 
+           width = 0.5) +
+  geom_errorbar(aes(ymin = Mean-SE, 
+                    ymax = Mean+SE),
+                size = .7,
+                width = 0.15) +
+  theme_classic2()
+```
+]
+
+---
+# Basic plots: <tt>bar plot</tt>
+.pull-left[
+```{r eval=FALSE}
+Salaries %>% 
+  select(discipline, rank, sex) %>% 
+  group_by(sex) %>% 
+  count(rank) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=rank, 
+             y = n, 
+             fill=reorder(sex,-n))) +
+  geom_bar(stat = "identity", 
+           position = "stack", 
+           width = 0.5) +
+  coord_flip() +
+  geom_text(aes(label = n),
+            hjust=1.3,
+            size = 3)+
+  labs(x = "Rank",
+       y = "No. of faculty",
+       fill = "Sex") +
+  theme_classic()
+
+```
+]
+
+.pull-right[
+```{r echo=FALSE}
+Salaries %>% 
+  select(discipline, rank, sex) %>% 
+  group_by(sex) %>% 
+  count(rank) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=rank, 
+             y = n, 
+             fill=reorder(sex,-n))) +
+  geom_bar(stat = "identity", 
+           position = "stack", 
+           width = 0.5) +
+  coord_flip() +
+  geom_text(aes(label = n),
+            hjust=1.3,
+            size = 3)+
+  labs(x = "Rank",
+       y = "No. of faculty",
+       fill = "Sex") +
+  theme_classic()
+
+```
+
+]
+
+---
+# Basic plots: <tt>bar plot</tt>
+.pull-left[
+```{r eval=FALSE}
+Salaries %>% 
+  select(discipline, rank, sex) %>% 
+  group_by(sex) %>% 
+  count(rank) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=rank, 
+             y = n, 
+             fill = sex)) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           col = "black") +
+  geom_text(aes(label = n),
+            position = position_dodge(0.9),
+            vjust = -1,
+            size = 3)+
+  labs(x = "Rank",
+       y = "No. of faculty",
+       fill = "Sex") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0,300)) +
+  theme_classic()
+
+```
+]
+.pull-right[
+```{r echo=FALSE}
+Salaries %>% 
+  select(discipline, rank, sex) %>% 
+  group_by(sex) %>% 
+  count(rank) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=rank, 
+             y = n, 
+             fill = sex)) +
+  geom_bar(stat = "identity",
+           position = "dodge") +
+  geom_text(aes(label = n),
+            position = position_dodge(0.5),
+            vjust = -1.0,
+            size = 3)+
+  labs(x = "Rank",
+       y = "No. of faculty",
+       fill = "Sex") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0,300)) +
+  theme_classic()
+```
+
+]
+---
+# Basic plots: histogram
+
+.pull-left[
+```{r eval=F}
+Salaries %>% 
+  ggplot(aes(x = salary)) +
+  geom_histogram(fill = "lightblue",
+                 color = "black") +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_wrap(~sex)
+```
+]
+.pull-right[
+```{r echo=F}
+Salaries %>% 
+  ggplot(aes(x = salary)) +
+  geom_histogram(fill = "lightblue",
+                 color = "black") +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_wrap(~sex)
+```
+]
+
+---
+
+# Basic plots: density plot
+.pull-left[
+```{r eval = F}
+Salaries %>% 
+  ggplot(aes(x = salary)) +
+  geom_density(fill = "lightblue") +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_wrap(~rank)
+```
+]
+
+.pull-right[
+```{r echo = F}
+Salaries %>% 
+  ggplot(aes(x = salary)) +
+  geom_density(fill = "lightblue") +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_wrap(~rank)
+```
+
+]
+---
+# Basic plots: density plot
+.pull-left[
+```{r eval=F}
+Salaries %>% 
+  ggplot(aes(x = salary, 
+             fill = rank, 
+             color = rank)) +
+  scale_y_continuous(expand = c(0,0)) +
+  geom_density()
+```
+]
+
+.pull-right[
+```{r echo=F}
+Salaries %>% 
+  ggplot(aes(x = salary, 
+             fill = rank, 
+             color = rank)) +
+  scale_y_continuous(expand = c(0,0)) +
+  geom_density()
+```
+
+]
+
+---
+# Basic plots: box plot
+
+.pull-left[
+```{r eval = FALSE}
+Salaries %>% 
+  ggplot(aes(x = salary, 
+             fill = rank, 
+             color = rank)) +
+  geom_boxplot() + 
+  scale_y_continuous(expand = c(0,0)) +
+  theme(axis.text.x=element_blank()) +
+  coord_flip()
+```
+]
+
+.pull-right[
+```{r echo = FALSE}
+Salaries %>% 
+  ggplot(aes(x = salary,  
+             fill = rank, 
+             color = rank)) +
+  geom_boxplot() + 
+  scale_y_continuous(expand = c(0,0)) +
+  theme(axis.text.x=element_blank())+
+  coord_flip()
+```
+
+
+]
+---
+class: center, middle
+
+# LUNCH BREAK
+
+---
+# Interactive plots
+
+```{r eval=FALSE}
+g1 <- ggplot(data = Salaries,
+             mapping = aes(x = yrs.service, 
+                           y = salary,
+                           color = sex)) +
+  geom_point(size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm") +
+  theme_classic() 
+
+ggplotly(g1)
+```
+---
+# Interactive plots
+
+
+```{r echo=FALSE, fig.align='center'}
+g1 <- ggplot(data = Salaries,
+             aes(x = yrs.service, 
+                 y = salary,
+                 color = sex)) +
+  geom_point(size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm") +
+  theme_classic() 
+
+ggplotly(g1)
+```
+
+---
+
+# Interactive plots
+
+
+```{r eval=FALSE, fig.align='center'}
+g1 <- ggplot(data = Salaries,
+             aes(x = yrs.service, 
+                 y = salary,
+                 color = sex,
+                 Label1 = sex,
+                 Label2 = rank,
+                 Label3 = discipline)) +
+  geom_point(size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm") +
+  theme_classic() 
+
+ggplotly(g1, tooltip = c("Label1", "Label2", "Label3"))
+```
+---
+# Interactive plots
+
+
+```{r echo=FALSE, fig.align='center'}
+g1 <- ggplot(data = Salaries,
+             aes(x = yrs.service, 
+                 y = salary,
+                 color = sex,
+                 Label1 = sex,
+                 Label2 = rank,
+                 Label3 = discipline)) +
+  geom_point(size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary") +
+  geom_smooth(method="lm") +
+  theme_classic() 
+
+ggplotly(g1, tooltip = c("Label1", "Label2", "Label3"))
+```
+
+---
+# Animated plots
+
+```{r eval=FALSE}
+g <- ggplot(data = gapminder, 
+            aes(x = gdpPercap, 
+                y = lifeExp, 
+                size = pop, 
+                fill = continent)) +
+  geom_point(aes(frame = year,
+                 id = country)) +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  facet_wrap(~continent) 
+
+ggplotly(g)
+```
+
+---
+# Animated plots
+
+```{r echo=FALSE}
+g <- ggplot(data = gapminder, 
+            aes(x = gdpPercap, 
+                y = lifeExp, 
+                size = pop, 
+                fill = continent)) +
+  geom_point(aes(frame = year,
+                 id = country)) +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  facet_wrap(~continent) 
+
+ggplotly(g)
+```
+
+---
+
+# Interactive dashboard: <tt>flexdashboard</tt>
+
+- displays various types of data visualizations in a single page
+
+- **flexdashboard** facilitates easy creation of interactive dashboards for R
+
+- Here is [My First Flexdashboard](https://rpubs.com/bertmilla/1289853)
+
+- [My Second Flexdashboard](https://rpubs.com/bertmilla/1289857)
+
