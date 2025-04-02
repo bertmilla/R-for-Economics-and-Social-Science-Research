@@ -1,0 +1,93 @@
+---
+title: "My First R Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(plotly)
+library(gapminder)
+library(gganimate)
+library(carData)
+library(svglite)
+```
+
+# Column {data-width=500}
+-----------------------------------------------------------------------
+
+### **Animated plot**
+
+```{r}
+g <- ggplot(data = gapminder, 
+            aes(x = gdpPercap, 
+                y = lifeExp, 
+                size = pop, 
+                fill = continent)) +
+  geom_point(aes(frame = year,
+                 id = country)) +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  facet_wrap(~continent) 
+
+ggplotly(g)
+```
+
+
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### **Interactive plot**
+
+```{r}
+g1 <- ggplot(data = Salaries,
+             aes(x = yrs.service, 
+                 y = salary,
+                 color = sex,
+                 Label1 = sex,
+                 Label2 = rank,
+                 Label3 = discipline)) +
+  geom_point(size = 3,
+             alpha = 1.5) +
+  labs(x = "Years of Service",
+       y = "Salary",
+       color = "Sex") +
+  geom_smooth(method="lm") +
+  theme_classic() 
+
+ggplotly(g1, tooltip = c("Label1", "Label2", "Label3"))
+```
+
+### **Side-by-side bar chart**
+
+```{r}
+
+Salaries %>% 
+  select(discipline, rank, sex) %>% 
+  group_by(sex) %>% 
+  count(rank) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x=rank, 
+             y = n, 
+             fill = sex)) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           col = "black") +
+  geom_text(aes(label = n),
+            position = position_dodge(0.9),
+            vjust = -1,
+            size = 3)+
+  labs(x = "Rank",
+       y = "No. of faculty",
+       fill = "Sex") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0,300)) +
+  theme_classic()
+
+```
+
