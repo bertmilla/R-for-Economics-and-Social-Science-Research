@@ -1,0 +1,254 @@
+---
+title: "R for Economics and Social Science Research"
+author: "NE Milla, Jr."
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+subtitle: Key ANswer
+---
+
+```{=html}
+<style type="text/css">
+
+body, td {
+   font-size: 18px;
+}
+code.r{
+  font-size: 18px;
+}
+pre {
+  font-size: 18px
+}
+</style>
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## WORKSHOP 4
+
+1. Load the *rental* data set from the **wooldridge** package using the code below.
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+library(tidyverse)
+library(plm)
+library(wooldridge)
+data('rental')
+head(rental)
+rental %>% 
+  select(city, year) %>% 
+  table()
+
+# 64 cities in 2 years
+```
+
+
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+rental %>%
+  group_by(city) %>%
+  summarize(lrent_mean = mean(lrent),
+            var = sd(lrent)^2) %>% 
+  arrange(-var)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+rental %>%
+  group_by(year) %>%
+  summarize(lrent_mean = mean(lrent),
+            var = sd(lrent)^2) %>% 
+  arrange(-var)
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+rental %>%
+  group_by(city) %>%
+  summarize(lrent_mean = mean(lrent)) %>%
+  left_join(rental) %>%
+  ggplot(aes(x = reorder(as.character(city), city), 
+             y = lrent)) +
+  geom_point() +
+  geom_line(aes(x = city, 
+                y = lrent_mean), 
+            col = "blue") +
+  labs(x = "City", 
+       y = "Rent") +
+    theme(axis.text.x = element_text(angle = 90))
+```
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+rental %>%
+  group_by(year) %>%
+  summarise(lrent_meanyr = mean(lrent)) %>%
+  left_join(rental) %>%
+  ggplot(aes(x = year, y = lrent)) +
+  geom_point() +
+  geom_line(aes(x = year, 
+                y = lrent_meanyr), 
+            col = "blue") +
+  scale_x_continuous(labels = as.character(rental$year), 
+                     breaks = rental$year) +
+  labs(x = "Year", 
+       y = "Rental") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+
+2. Fit an OLS model with *lrent* as response and *y90*, *lpop*, *lavginc*, and *pctstu* as predictors. You can use either the *lm()* or *plm()* function. Check the standard assumptions of a linear model. Which assumptions are violated, if any?
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+ols_mod <- lm(lrent ~ y90 + lpop + lavginc + pctstu,
+              data = rental)
+
+summary(ols_mod)
+```
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+pooled_model_plm <- plm(lrent ~ y90 + lpop + lavginc + pctstu, 
+                    data = rental, 
+                    index = c("city", "year"), 
+                    effect = "individual", 
+                    model = "pooling")
+
+summary(pooled_model_plm)
+```
+
+
+3. Using the same set of response and predictor variables fit a FE (within) model via LSDV approach
+or using the *<tt>plm()* function. 
+
+# Using LSDV approach
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+#City alone
+lsdv_mod_city <- lm(lrent ~ y90 + lpop + lavginc + pctstu + factor(city),
+              data = rental)
+
+summary(lsdv_mod_city)
+```
+
+
+
+# Using plm()
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+fe_model_plm <- plm(lrent ~ y90 + lpop + lavginc + pctstu,
+                    data = rental, 
+                    index = c("city", "year"), 
+                    effect = "individual", 
+                    model = "within")
+
+summary(fe_model_plm)
+```
+
+
+
+4. Use the *pFtest()* function to test for fixed effects. 
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+pFtest(fe_model_plm, pooled_model_plm)
+```
+
+Therefore, there are significant fixed effects. This implies that FE model is better than (pooled) OLS model.
+
+
+5. Using the same set of response and predictor variables fit a RE model.
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+re_model_plm <- plm(lrent ~ y90 + lpop + lavginc + pctstu,
+                    data = rental, 
+                    index = c("city", "year"), 
+                    effect = "individual", 
+                    model = "random")
+
+summary(re_model_plm)
+```
+
+
+6. Perform the Hausman test to determine whether a FE or RE model fits the data well.
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+phtest(fe_model_plm, re_model_plm)
+```
+
+Since the p-value < 0.05, we reject the null hypothesis (RE Model) and conclude that the FE model is more appropriate for this data.
+
+7. Run the Breusch-Pagan Lagrange Multiplier test to determine if RE model fits better than (pooled) OLS model. 
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+plmtest(re_model_plm, 
+        effect = "individual", 
+        type = c("bp"))
+```
+
+Therefore, RE model is better than (pooled) OLS model.
+
+
+In addition, FE model is also better than pooled OLS model as indicated by the small p-value in the output below.
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+plm::plmtest(fe_model_plm, 
+        effect = "individual", 
+        type = c("bp"))
+```
+
+
+
+8. Check all the assumptions of the final model. Re-estimate the coefficients, if necessary, based on the findings of the assumption checks.
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+# Test for heteroscedasticity
+library(lmtest)
+bptest(fe_model_plm)
+```
+
+Therefore, there is evidence of homoscedastic error variances.
+
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+# Testing for autocorrelation
+pbgtest(fe_model_plm)
+```
+
+Therefore, errors are not independent. Hence we apply robust standard errors as follows:
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+coeftest(fe_model_plm, 
+         vcov = vcovHC(fe_model_plm,
+                       type = "sss",
+                       cluster = "group"))
+
+#Uncorrected SE for comparison
+data.frame("Uncorrected SE" = sqrt(diag(vcov(fe_model_plm))))
+```
+
+
+9. Interpret the coefficients of the best model.
+
+```{r message=FALSE, warning=FALSE, class.output="bg-warning", class.source="bg-info"}
+coeftest(fe_model_plm, 
+         vcov = vcovHC(fe_model_plm,
+                       type = "sss",
+                       cluster = "group"))
+
+```
+
+1. Assuming all else are equal, rent in 1990 is $e^{0.3855214} \approx 1.47$ times greater than the rent in 1980, or a 47% increase in rent from 1980 to 1990.
+
+2. A 1% increase in population (pop) corresponds to about 0.07% increase in rent, holding all other predictors constant. This effect is too small and non-significant. Therefore increase in population does not significantly affect rent.
+
+3. A 1% increase in average income (avginc) corresponds to approximately 0.31% increase in rent, assuming all else are equal.
+
+4. A 1% increase in the percentage of student population (pctstu) is associated with approximately 0.01% increase in rent. [May not be practically significant!]  
+
